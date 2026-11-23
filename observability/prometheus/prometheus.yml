@@ -6,3 +6,4 @@ scrape_configs:
   - job_name: services
     static_configs:
       - targets: ["payments:8000"]
+      - targets: ["payments:8000", "orders:8000"]

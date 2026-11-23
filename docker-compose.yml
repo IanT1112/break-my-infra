@@ -8,6 +8,19 @@ services:
     labels:
       bmi.logs: "true"
 
+  orders:
+    build: ./services
+    command: uvicorn orders.main:app --host 0.0.0.0 --port 8000
+    environment:
+      PAYMENTS_URL: http://payments:8000
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+    labels:
+      bmi.logs: "true"
+    depends_on:
+      - payments
+
   prometheus:
     image: prom/prometheus:v3.1.0
     volumes:
