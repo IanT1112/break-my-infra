@@ -8,57 +8,77 @@
 </head>
 <body>
   <main class="layout">
+
+    <!-- ═══════ Panel de control ═══════ -->
     <aside class="panel">
-      <header>
-        <p class="eyebrow">chaos engineering · live</p>
-        <h1>Break My Infra</h1>
-        <p class="lead">Rompe el sistema. Mira cómo lo detecta y se recupera solo.</p>
+      <header class="hero">
+        <p class="eyebrow">Break My Infra</p>
+        <h1>Rompe el sistema.<br><span>Míralo recuperarse.</span></h1>
       </header>
 
-      <section class="scenarios">
-        <button class="chaos" data-scenario="traffic">
-          <span class="icon">🚀</span>
-          <span><strong>Pico de tráfico</strong><small>40 req/s · satura el pool de la DB</small></span>
-        </button>
-        <button class="chaos" data-scenario="errors">
-          <span class="icon">💥</span>
-          <span><strong>Inyectar errores</strong><small>30% de los pagos fallan</small></span>
-        </button>
-        <button class="chaos" data-scenario="latency">
-          <span class="icon">🐢</span>
-          <span><strong>Base de datos lenta</strong><small>+600–1200 ms por pago</small></span>
-        </button>
-      </section>
-
-      <section class="status" id="status" data-state="idle">
-        <span class="dot"></span>
-        <div>
-          <p class="status-label" id="status-label">Sistema estable</p>
-          <p class="status-detail" id="status-detail">Elige un escenario para empezar</p>
+      <!-- Por qué -->
+      <section class="block">
+        <h2 class="block-title">Contexto</h2>
+        <div class="why">
+          <button class="why-item" data-tip-key="devops" data-modal="devops">
+            <span>¿Por qué DevOps?</span><i aria-hidden="true">›</i>
+          </button>
+          <button class="why-item" data-tip-key="project" data-modal="project">
+            <span>¿Por qué este proyecto?</span><i aria-hidden="true">›</i>
+          </button>
         </div>
-        <span class="countdown" id="countdown"></span>
       </section>
 
-      <section class="hint">
-        <h2>Qué mirar</h2>
-        <ul>
-          <li><b>Latencia p95</b> cruza la línea roja de 500 ms</li>
-          <li><b>Error rate</b> pasa de verde a rojo</li>
-          <li>A los 45 s todo vuelve a la normalidad, <b>sin intervención</b></li>
-        </ul>
+      <!-- Tecnologías -->
+      <section class="block">
+        <h2 class="block-title">Tecnologías</h2>
+        <ul class="tech-list" id="tech-list"></ul>
       </section>
 
-      <footer>
-        <a href="https://github.com/IanT1112/break-my-infra" target="_blank" rel="noopener">Ver código en GitHub →</a>
-        <span>FastAPI · Redis · Prometheus · Loki · Tempo · Grafana</span>
+      <footer class="credits">
+        Desarrollado por <b>Ian Tapia</b> ·
+        <a href="https://github.com/IanT1112/break-my-infra" target="_blank" rel="noopener">GitHub</a>
       </footer>
     </aside>
 
-    <section class="dashboard">
-      <iframe id="grafana" title="Dashboard de Grafana"></iframe>
+    <!-- ═══════ Monitoreo 2x2 ═══════ -->
+    <section class="monitor">
+      <div class="toolbar">
+        <div class="actions">
+          <p class="kicker">Prueba a romper un sistema</p>
+          <div class="scenarios">
+            <button class="chaos" data-scenario="traffic" title="40 req/s · satura el pool de la DB">
+              <span>Pico de tráfico</span><span class="count" aria-hidden="true"></span>
+            </button>
+            <button class="chaos" data-scenario="errors" title="30% de los pagos fallan">
+              <span>Inyectar errores</span><span class="count" aria-hidden="true"></span>
+            </button>
+            <button class="chaos" data-scenario="latency" title="+600–1200 ms por pago">
+              <span>Base de datos lenta</span><span class="count" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <p class="notice" id="notice" aria-live="polite"></p>
+          <span class="range">Últimos 5 minutos · refresco 5 s</span>
+        </div>
+      </div>
+      <div class="card"><iframe id="grafana" title="Monitoreo: latencia, error rate, requests y logs"></iframe></div>
     </section>
   </main>
 
+  <!-- Tooltip flotante -->
+  <div class="tip" id="tip" role="tooltip" hidden></div>
+
+  <!-- Ventana con efecto espejo -->
+  <dialog class="glass" id="modal" aria-labelledby="modal-title">
+    <button class="close" id="modal-close" aria-label="Cerrar">×</button>
+    <p class="eyebrow" id="modal-eyebrow"></p>
+    <h2 id="modal-title"></h2>
+    <div class="modal-body" id="modal-body"></div>
+  </dialog>
+
+  <script src="/content.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
