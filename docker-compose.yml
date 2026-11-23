@@ -1,14 +1,20 @@
 services:
+  redis:
+    image: redis:7.4-alpine
+    
   payments:
     build: ./services
     command: uvicorn payments.main:app --host 0.0.0.0 --port 8000
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8002:8000"
     restart: unless-stopped
     labels:
       bmi.logs: "true"
+    depends_on:
+      - redis
 
   orders:
     build: ./services
@@ -75,6 +81,7 @@ services:
       - ./observability/tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
     ports:
       - "3200:3200"
+      
 
 volumes:
   grafana-data:
