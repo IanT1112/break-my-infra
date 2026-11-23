@@ -1,7 +1,7 @@
 services:
   redis:
     image: redis:7.4-alpine
-    
+
   payments:
     build: ./services
     command: uvicorn payments.main:app --host 0.0.0.0 --port 8000
@@ -29,6 +29,22 @@ services:
       bmi.logs: "true"
     depends_on:
       - payments
+  
+  gateway:
+    build: ./services
+    command: uvicorn gateway.main:app --host 0.0.0.0 --port 8000
+    environment:
+      ORDERS_URL: http://orders:8000
+      REDIS_URL: redis://redis:6379/0
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    labels:
+      bmi.logs: "true"
+    depends_on:
+      - orders
+      - redis
 
   prometheus:
     image: prom/prometheus:v3.1.0

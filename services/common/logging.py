@@ -40,5 +40,5 @@ def setup_logging(service: str) -> logging.Logger:
 
     # Los access logs de uvicorn sobran: ya tenemos métricas por request
     logging.getLogger("uvicorn.access").disabled = True
-
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     return logging.getLogger(service)

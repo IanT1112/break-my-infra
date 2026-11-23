@@ -7,3 +7,4 @@ scrape_configs:
     static_configs:
       - targets: ["payments:8000"]
       - targets: ["payments:8000", "orders:8000"]
+      - targets: ["payments:8000", "orders:8000", "gateway:8000"]
