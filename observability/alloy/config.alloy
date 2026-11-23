@@ -1,0 +1,37 @@
+// 1. Descubre los contenedores de Docker
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// 2. Filtra y etiqueta
+discovery.relabel "containers" {
+  targets = []
+
+  // Solo contenedores marcados con el label bmi.logs=true
+  rule {
+    source_labels = ["__meta_docker_container_label_bmi_logs"]
+    regex         = "true"
+    action        = "keep"
+  }
+
+  // Usa el nombre del servicio de compose como label "service"
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+// 3. Lee los logs de esos contenedores
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.write.local.receiver]
+}
+
+// 4. Envía a Loki
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
