@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Break My Infra</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="layout">
+    <aside class="panel">
+      <header>
+        <p class="eyebrow">chaos engineering · live</p>
+        <h1>Break My Infra</h1>
+        <p class="lead">Rompe el sistema. Mira cómo lo detecta y se recupera solo.</p>
+      </header>
+
+      <section class="scenarios">
+        <button class="chaos" data-scenario="traffic">
+          <span class="icon">🚀</span>
+          <span><strong>Pico de tráfico</strong><small>40 req/s · satura el pool de la DB</small></span>
+        </button>
+        <button class="chaos" data-scenario="errors">
+          <span class="icon">💥</span>
+          <span><strong>Inyectar errores</strong><small>30% de los pagos fallan</small></span>
+        </button>
+        <button class="chaos" data-scenario="latency">
+          <span class="icon">🐢</span>
+          <span><strong>Base de datos lenta</strong><small>+600–1200 ms por pago</small></span>
+        </button>
+      </section>
+
+      <section class="status" id="status" data-state="idle">
+        <span class="dot"></span>
+        <div>
+          <p class="status-label" id="status-label">Sistema estable</p>
+          <p class="status-detail" id="status-detail">Elige un escenario para empezar</p>
+        </div>
+        <span class="countdown" id="countdown"></span>
+      </section>
+
+      <section class="hint">
+        <h2>Qué mirar</h2>
+        <ul>
+          <li><b>Latencia p95</b> cruza la línea roja de 500 ms</li>
+          <li><b>Error rate</b> pasa de verde a rojo</li>
+          <li>A los 45 s todo vuelve a la normalidad, <b>sin intervención</b></li>
+        </ul>
+      </section>
+
+      <footer>
+        <a href="https://github.com/IanT1112/break-my-infra" target="_blank" rel="noopener">Ver código en GitHub →</a>
+        <span>FastAPI · Redis · Prometheus · Loki · Tempo · Grafana</span>
+      </footer>
+    </aside>
+
+    <section class="dashboard">
+      <iframe id="grafana" title="Dashboard de Grafana"></iframe>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
