@@ -2,6 +2,8 @@ services:
   payments:
     build: ./services
     command: uvicorn payments.main:app --host 0.0.0.0 --port 8000
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
     ports:
       - "8002:8000"
     restart: unless-stopped
@@ -13,6 +15,7 @@ services:
     command: uvicorn orders.main:app --host 0.0.0.0 --port 8000
     environment:
       PAYMENTS_URL: http://payments:8000
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
     ports:
       - "8001:8000"
     restart: unless-stopped
@@ -63,6 +66,15 @@ services:
       - "12345:12345"
     depends_on:
       - loki
+      - tempo
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./observability/tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+    ports:
+      - "3200:3200"
 
 volumes:
   grafana-data:

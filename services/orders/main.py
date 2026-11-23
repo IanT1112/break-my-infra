@@ -4,6 +4,7 @@ import time
 
 import httpx
 from fastapi import FastAPI, HTTPException
+from common.tracing import setup_tracing 
 
 from common.logging import setup_logging
 from common.metrics import setup_metrics
@@ -14,6 +15,7 @@ log = setup_logging("orders")
 
 app = FastAPI(title="orders")
 setup_metrics(app, "orders")
+setup_tracing(app, "orders") 
 
 client = httpx.Client(base_url=PAYMENTS_URL, timeout=2.0)
 

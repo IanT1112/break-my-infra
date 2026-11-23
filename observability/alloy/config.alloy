@@ -1,20 +1,17 @@
-// 1. Descubre los contenedores de Docker
+// 1. Descubre SOLO contenedores con el label bmi.logs=true
 discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
+
+  filter {
+    name   = "label"
+    values = ["bmi.logs=true"]
+  }
 }
 
-// 2. Filtra y etiqueta
+// 2. Etiqueta con el nombre del servicio
 discovery.relabel "containers" {
   targets = []
 
-  // Solo contenedores marcados con el label bmi.logs=true
-  rule {
-    source_labels = ["__meta_docker_container_label_bmi_logs"]
-    regex         = "true"
-    action        = "keep"
-  }
-
-  // Usa el nombre del servicio de compose como label "service"
   rule {
     source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     target_label  = "service"
@@ -33,5 +30,38 @@ loki.source.docker "containers" {
 loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// ─────────── TRAZAS ───────────
+
+// 5. Recibe trazas de los servicios (protocolo OTLP)
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+// 6. Agrupa trazas en lotes (menos requests a Tempo)
+otelcol.processor.batch "default" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+// 7. Envía a Tempo
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
   }
 }

@@ -5,11 +5,13 @@ from fastapi import FastAPI, HTTPException
 
 from common.logging import setup_logging
 from common.metrics import setup_metrics
+from common.tracing import setup_tracing
 
 log = setup_logging("payments")
 
 app = FastAPI(title="payments")
 setup_metrics(app, "payments")
+setup_tracing(app, "payments")
 
 
 @app.get("/health")
