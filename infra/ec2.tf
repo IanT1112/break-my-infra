@@ -1,10 +1,10 @@
 resource "aws_instance" "demo" {
-  ami                         = data.aws_ssm_parameter.ubuntu_arm.value
-  instance_type               = var.instance_type
-  subnet_id                   = data.aws_subnets.default.ids[0]
-  vpc_security_group_ids      = [aws_security_group.web.id]
-  iam_instance_profile        = aws_iam_instance_profile.ec2.name
-  associate_public_ip_address = true
+  ami                                  = data.aws_ssm_parameter.ubuntu_arm.value
+  instance_type                        = var.instance_type
+  subnet_id                            = data.aws_subnets.default.ids[0]
+  vpc_security_group_ids               = [aws_security_group.web.id]
+  iam_instance_profile                 = aws_iam_instance_profile.ec2.name
+  associate_public_ip_address          = true
   instance_initiated_shutdown_behavior = "stop"
 
   user_data                   = file("${path.module}/user-data.sh")
@@ -32,7 +32,7 @@ resource "aws_instance" "demo" {
   }
 
   # Si Ubuntu publica una imagen nueva, NO recrear la máquina
-   lifecycle {
+  lifecycle {
     ignore_changes = [ami, associate_public_ip_address]
   }
 }

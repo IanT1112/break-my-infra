@@ -13,3 +13,7 @@ output "instance_id" {
 output "public_ip" {
   value = aws_instance.demo.public_ip
 }
+
+output "waker_url" {
+  value = aws_lambda_function_url.waker.function_url
+}
