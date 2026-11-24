@@ -1,5 +1,3 @@
-// Dashboard completo en kiosk (ya está maquetado 2x2). Los paneles sueltos (d-solo)
-// no respetan refresh=5s en Grafana 11, por eso no se usan.
 const DASHBOARD_URL =
   "/grafana/d/ag545cqyrf30gb/break-my-infra?orgId=1&from=now-5m&to=now&refresh=5s&kiosk&autofitpanels&theme=light&_dash.hideTimePicker";
 
@@ -115,7 +113,11 @@ async function trigger(scenario) {
   buttons.forEach((b) => (b.disabled = true));
   try {
     const res = await fetch(`/api/chaos/${scenario}`, { method: "POST" });
-    if (res.status === 409) showNotice("Ya hay un escenario activo, espera a que termine");
+    if (res.status === 401) {
+      sessionEnd = 0;
+      showGate("Tu sesión terminó", "Inicia una nueva para seguir probando.", "Iniciar demo");
+    }
+    else if (res.status === 409) showNotice("Ya hay un escenario activo, espera a que termine");
     else if (res.status === 429) showNotice("Demasiados intentos, espera un minuto");
     else if (!res.ok) showNotice("No se pudo activar el escenario");
   } catch {
@@ -154,3 +156,92 @@ async function refresh() {
 buttons.forEach((b) => b.addEventListener("click", () => trigger(b.dataset.scenario)));
 refresh();
 setInterval(refresh, 1000);
+
+// ─── Sesión de demo (20 min, máx. 3 personas) ───
+const gate = document.createElement("div");
+gate.className = "gate";
+gate.innerHTML = `
+  <div class="gate-card">
+    <p class="gate-eyebrow">Demo en vivo</p>
+    <h2 id="gate-title"></h2>
+    <p id="gate-text"></p>
+    <button id="gate-btn" class="gate-btn"></button>
+  </div>`;
+document.body.appendChild(gate);
+
+const pill = document.createElement("div");
+pill.className = "session-pill";
+pill.hidden = true;
+document.body.appendChild(pill);
+
+const gateTitle = gate.querySelector("#gate-title");
+const gateText = gate.querySelector("#gate-text");
+const gateBtn = gate.querySelector("#gate-btn");
+
+let sessionEnd = 0;
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+const mins = (s) => `${Math.ceil(s / 60)} min`;
+
+function showGate(title, text, buttonLabel) {
+  gateTitle.textContent = title;
+  gateText.textContent = text;
+  gateBtn.hidden = !buttonLabel;
+  if (buttonLabel) gateBtn.textContent = buttonLabel;
+  gate.hidden = false;
+  pill.hidden = true;
+}
+
+function startCountdown(remaining) {
+  sessionEnd = Date.now() + remaining * 1000;
+  gate.hidden = true;
+  pill.hidden = false;
+}
+
+// Contador de la sesión
+setInterval(() => {
+  if (!sessionEnd) return;
+  const left = Math.max(0, Math.round((sessionEnd - Date.now()) / 1000));
+  pill.textContent = `Tu sesión · ${mmss(left)}`;
+  if (left === 0) {
+    sessionEnd = 0;
+    showGate("¡Gracias por probar la demo! 👋", "Tu sesión de 20 minutos terminó.", null);
+  }
+}, 1000);
+
+async function startSession() {
+  gateBtn.disabled = true;
+  try {
+    const res = await fetch("/api/session", { method: "POST" });
+    const data = await res.json().catch(() => ({})); // el 429 de nginx no es JSON
+    if (res.ok) return startCountdown(data.remaining);
+
+    const reason = data.detail?.reason;
+    const retry = mins(data.detail?.retry_in ?? 60);
+    if (reason === "full")
+      showGate("La demo está llena", `Hay 3 personas usándola ahora. Vuelve en ~${retry}.`, "Reintentar");
+    else if (reason === "cooldown")
+      showGate("Ya probaste la demo", `Podrás volver a usarla en ~${retry}.`, null);
+    else
+      showGate("Demasiados intentos", "Espera un momento y vuelve a intentar.", "Reintentar");
+  } catch {
+    showGate("Sin conexión", "No pudimos contactar con el servidor.", "Reintentar");
+  } finally {
+    gateBtn.disabled = false;
+  }
+}
+
+gateBtn.addEventListener("click", startSession);
+
+// Al cargar: ¿ya tengo una sesión activa? (por ejemplo, si recargué la página)
+(async () => {
+  try {
+    const res = await fetch("/api/session");
+    const data = await res.json();
+    if (data.active) return startCountdown(data.remaining);
+  } catch {}
+  showGate(
+    "Rompe el sistema durante 20 minutos",
+    "Máximo 3 personas a la vez, para que la demo funcione bien para todos.",
+    "Iniciar demo"
+  );
+})();

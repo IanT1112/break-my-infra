@@ -225,3 +225,60 @@ button { font: inherit; color: inherit; }
   .chaos.is-active, .glass[open], .glass::backdrop { animation: none; }
   .tip { transition: none; }
 }
+
+
+/* ─── Sesión de demo ─── */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 17, 22, .55);
+  backdrop-filter: blur(6px);
+}
+.gate[hidden],
+.session-pill[hidden] { display: none; }
+
+.gate-card {
+  width: min(440px, calc(100% - 32px));
+  background: #fff;
+  color: #111;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+  text-align: center;
+}
+.gate-eyebrow {
+  font: 600 11px ui-monospace, Consolas, monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #e5484d;
+}
+.gate-card h2 { font-size: 24px; margin: 10px 0 8px; letter-spacing: -.01em; }
+.gate-card p { color: #555; }
+.gate-btn {
+  margin-top: 20px;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 10px;
+  background: #e5484d;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gate-btn:disabled { opacity: .5; cursor: wait; }
+
+.session-pill {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 40;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font: 600 13px ui-monospace, Consolas, monospace;
+}
