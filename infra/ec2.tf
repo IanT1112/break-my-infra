@@ -5,6 +5,7 @@ resource "aws_instance" "demo" {
   vpc_security_group_ids      = [aws_security_group.web.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2.name
   associate_public_ip_address = true
+  instance_initiated_shutdown_behavior = "stop"
 
   user_data                   = file("${path.module}/user-data.sh")
   user_data_replace_on_change = true
