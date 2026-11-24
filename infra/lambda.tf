@@ -1,7 +1,7 @@
 # Empaqueta el código en un .zip
 data "archive_file" "waker" {
   type        = "zip"
-  source_file = "${path.module}/lambda/waker.py"
+  source_dir  = "${path.module}/lambda"
   output_path = "${path.module}/build/waker.zip"
 }
 

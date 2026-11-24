@@ -2,6 +2,7 @@ import json
 import os
 import urllib.request
 from datetime import datetime, timezone
+from pathlib import Path
 
 import boto3
 
@@ -10,6 +11,7 @@ ssm = boto3.client("ssm")
 
 INSTANCE_ID = os.environ["INSTANCE_ID"]
 MAX_STARTS_PER_DAY = int(os.environ.get("MAX_STARTS_PER_DAY", "3"))
+LANDING = (Path(__file__).parent / "landing.html").read_text(encoding="utf-8")
 
 
 def respond(status, body):
@@ -46,6 +48,13 @@ def starts_today():
 def handler(event, context):
     method = event["requestContext"]["http"]["method"]
     path = event["rawPath"]
+
+    if path == "/" and method == "GET":
+        return {
+            "statusCode": 200,
+            "headers": {"Content-Type": "text/html; charset=utf-8"},
+            "body": LANDING,
+        }
 
     if path == "/status" and method == "GET":
         state, ip = instance_info()

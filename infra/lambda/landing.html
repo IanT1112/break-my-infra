@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Break My Infra · Demo en vivo</title>
+  <style>
+    :root { --text: #111; --muted: #6b6f76; --accent: #e5484d; --line: #e7e7ea; --ok: #2f9e64; }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      min-height: 100vh; display: grid; place-items: center; padding: 24px;
+      background: #f6f6f7; color: var(--text);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .card {
+      width: min(480px, 100%); background: #fff; border: 1px solid var(--line);
+      border-radius: 18px; padding: 36px; box-shadow: 0 20px 50px rgba(0, 0, 0, .06);
+    }
+    .eyebrow {
+      font: 600 11px ui-monospace, Consolas, monospace; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    h1 { font-size: 30px; line-height: 1.1; letter-spacing: -.02em; margin: 10px 0 8px; }
+    .lead { color: var(--muted); }
+    button {
+      margin-top: 24px; width: 100%; padding: 14px; border: 0; border-radius: 12px;
+      background: var(--accent); color: #fff; font-family: inherit; font-size: 16px;
+      font-weight: 600; cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: wait; }
+    [hidden] { display: none !important; }
+    .steps { list-style: none; padding: 0; margin-top: 24px; display: grid; gap: 12px; }
+    .steps li { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+    .steps li::before {
+      content: ""; width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid var(--line); flex-shrink: 0;
+    }
+    .steps li.doing { color: var(--text); }
+    .steps li.doing::before { border-color: var(--accent); animation: pulse 1s infinite; }
+    .steps li.done { color: var(--text); }
+    .steps li.done::before { background: var(--ok); border-color: var(--ok); }
+    .timer { margin-top: 16px; font: 600 13px ui-monospace, Consolas, monospace; color: var(--muted); }
+    .note { margin-top: 24px; font-size: 13px; color: var(--muted); }
+    @keyframes pulse { 50% { opacity: .3; } }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <p class="eyebrow">Demo en vivo · scale-to-zero</p>
+    <h1>Break My Infra</h1>
+    <p class="lead" id="lead">
+      El servidor está apagado para no gastar dinero. Enciéndelo y en ~1 minuto podrás romper el sistema.
+    </p>
+
+    <button id="start">Encender demo</button>
+
+    <ul class="steps" id="steps" hidden>
+      <li>Encendiendo servidor en AWS (EC2)</li>
+      <li>Levantando 10 contenedores</li>
+      <li>Listo, entrando a la demo…</li>
+    </ul>
+    <p class="timer" id="timer" hidden></p>
+
+    <p class="note">La máquina se apaga sola tras 10 minutos sin visitas · costo total: ~$2/mes.</p>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const btn = $("start"), lead = $("lead"), steps = $("steps"), timer = $("timer");
+    const ORDER = ["pending", "running", "ready"];
+    let ticker = null;
+
+    function setStep(step) {
+      const idx = ORDER.indexOf(step);
+      steps.querySelectorAll("li").forEach((li, i) => {
+        li.className = i < idx ? "done" : i === idx ? "doing" : "";
+      });
+    }
+
+    function showProgress() {
+      btn.hidden = true;
+      steps.hidden = false;
+      timer.hidden = false;
+      const t0 = Date.now();
+      ticker = setInterval(() => (timer.textContent = `${Math.round((Date.now() - t0) / 1000)} s`), 1000);
+    }
+
+    async function poll() {
+      try {
+        const s = await (await fetch("/status")).json();
+        if (s.ready) {
+          setStep("ready");
+          clearInterval(ticker);
+          setTimeout(() => (location.href = s.url), 800);
+          return;
+        }
+        setStep(s.state === "running" ? "running" : "pending");
+      } catch {}
+      setTimeout(poll, 3000);
+    }
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      const res = await fetch("/start", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 409 || res.status === 429) {
+        lead.textContent = data.detail;
+        btn.disabled = false;
+        return;
+      }
+      showProgress();
+      poll();
+    });
+
+    // Al cargar: si ya está encendida, entrar directo
+    (async () => {
+      try {
+        const s = await (await fetch("/status")).json();
+        if (s.ready) return (location.href = s.url);
+        if (s.state === "pending" || s.state === "running") { showProgress(); poll(); }
+      } catch {}
+    })();
+  </script>
+</body>
+</html>
