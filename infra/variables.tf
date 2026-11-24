@@ -15,3 +15,9 @@ variable "waker_concurrency" {
   type        = number
   default     = -1
 }
+
+variable "domain" {
+  description = "Dominio público de la demo"
+  type        = string
+  default     = "infra.iantapia.xyz"
+}
