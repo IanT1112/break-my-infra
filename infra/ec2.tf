@@ -32,7 +32,7 @@ resource "aws_instance" "demo" {
   }
 
   # Si Ubuntu publica una imagen nueva, NO recrear la máquina
-  lifecycle {
-    ignore_changes = [ami]
+   lifecycle {
+    ignore_changes = [ami, associate_public_ip_address]
   }
 }
