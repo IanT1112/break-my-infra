@@ -116,6 +116,7 @@ async function trigger(scenario) {
   try {
     const res = await fetch(`/api/chaos/${scenario}`, { method: "POST" });
     if (res.status === 409) showNotice("Ya hay un escenario activo, espera a que termine");
+    else if (res.status === 429) showNotice("Demasiados intentos, espera un minuto");
     else if (!res.ok) showNotice("No se pudo activar el escenario");
   } catch {
     showNotice("Sin conexión con la API");
