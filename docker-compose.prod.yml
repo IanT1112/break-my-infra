@@ -1,0 +1,44 @@
+services:
+  web:
+    ports: !override
+      - "80:80"
+    restart: unless-stopped
+
+  grafana:
+    environment:
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana/"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    ports: !reset []
+    restart: unless-stopped
+
+  prometheus:
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=24h
+    ports: !reset []
+    restart: unless-stopped
+
+  gateway:
+    ports: !reset []
+
+  orders:
+    ports: !reset []
+
+  payments:
+    ports: !reset []
+
+  redis:
+    restart: unless-stopped
+
+  loki:
+    ports: !reset []
+    restart: unless-stopped
+
+  tempo:
+    ports: !reset []
+    restart: unless-stopped
+
+  alloy:
+    ports: !reset []
+    restart: unless-stopped

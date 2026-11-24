@@ -5,3 +5,11 @@ output "who_am_i" {
 output "ubuntu_ami" {
   value = nonsensitive(data.aws_ssm_parameter.ubuntu_arm.value)
 }
+
+output "instance_id" {
+  value = aws_instance.demo.id
+}
+
+output "public_ip" {
+  value = aws_instance.demo.public_ip
+}
