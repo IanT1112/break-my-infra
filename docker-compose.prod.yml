@@ -20,6 +20,8 @@ services:
     restart: unless-stopped
 
   gateway:
+    environment:
+      SESSION_COOLDOWN: "1800"
     ports: !reset []
 
   orders:
