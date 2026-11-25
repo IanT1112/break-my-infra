@@ -76,7 +76,7 @@ resource "aws_lambda_function" "waker" {
   environment {
     variables = {
       INSTANCE_ID        = aws_instance.demo.id
-      MAX_STARTS_PER_DAY = "3"
+      MAX_STARTS_PER_DAY = "15"
     }
   }
 
